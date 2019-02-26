@@ -42,6 +42,7 @@ ReturnType!f callFunctionWithParamsStruct(alias f, S)(S s) {
 /**
 Very unnatural to call member f by string name, but I have not found a better solution.
 */
-ReturnType!(__traits(getMember, o, f)) callMemberFunctionWithParamsStruct(alias o, string f, S)(S s) {
+ReturnType!(__traits(getMember, o, f))
+callMemberFunctionWithParamsStruct(alias o, string f, S)(S s) {
     return __traits(getMember, o, f)(map!(m => __traits(getMember, s, m))(__traits(allMembers, S)));
 }
