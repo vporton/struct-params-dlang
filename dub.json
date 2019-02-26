@@ -1,9 +1,23 @@
 {
-	"authors": [
-		"Victor Porton"
-	],
-	"copyright": "Copyright © 2019, Victor Porton",
-	"description": "Default params using structs.",
-	"license": "Apache-2.0",
-	"name": "struct-params"
+  "authors": [
+    "Victor Porton"
+  ],
+  "copyright": "Copyright © 2019, Victor Porton",
+  "description": "Default params using structs.",
+  "license": "Apache-2.0",
+  "name": "struct-params",
+  "configurations": [
+    {
+      "name": "application",
+      "targetType": "executable"
+    },
+    {
+      "name": "shared-library",
+      "targetType": "dynamicLibrary"
+    },
+    {
+      "name": "static-library",
+      "targetType": "staticLibrary"
+    }
+  ]
 }
