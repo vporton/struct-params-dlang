@@ -69,3 +69,7 @@ ReturnType!(__traits(getMember, o, f))
 callMemberFunctionWithParamsStruct(alias o, string f, S)(S s) {
     return __traits(getMember, o, f)(map!(m => __traits(getMember, s, m))(__traits(allMembers, S)));
 }
+
+unittest {
+    ProviderParams("S", ((int, "x"), (float, "y")));
+}
