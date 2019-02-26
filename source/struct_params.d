@@ -71,5 +71,5 @@ callMemberFunctionWithParamsStruct(alias o, string f, S)(S s) {
 }
 
 unittest {
-    ProviderParams("S", ((int, "x"), (float, "y")));
+    mixin ProviderParams!("S", ((int, "x"), (float, "y")));
 }
