@@ -1,7 +1,7 @@
 module struct_params;
 
 private string ProviderParamsCode(string name, Fields...)()
-    if(!all!(t => isType!(t[0]), is(typeof(t[1]) == string) && t.length == 2)(Fields))
+    if(!all!(t => t.length == 2 && isType!(t[0]) && is(typeof(t[1]) == string))(Fields))
 {
     static assert(0, "ProviderParamsCode argument should be like [[int, \"x\"], [float, \"y\"]]");
 }
