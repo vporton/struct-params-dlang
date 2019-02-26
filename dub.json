@@ -1,0 +1,9 @@
+{
+	"authors": [
+		"Victor Porton"
+	],
+	"copyright": "Copyright © 2019, Victor Porton",
+	"description": "Default params using structs.",
+	"license": "Apache-2.0",
+	"name": "struct-params"
+}
