@@ -23,8 +23,12 @@ under the License.
 
 module struct_params;
 
+import std.range;
+import std.algorithm;
+
 private string ProviderParamsCode(string name, Fields...)()
-    if(!all!(t => t.length == 2 && isType!(t[0]) && is(typeof(t[1]) == string))(Fields))
+    if((Fields.length % 2) ||
+       any!(i => i % 2 ? !is(typeof(Fields[i]) == string) : !isType!(Fields[i]))(Fields.enumerate))
 {
     static assert(0, "ProviderParamsCode argument should be like [[int, \"x\"], [float, \"y\"]]");
 }
@@ -71,5 +75,5 @@ callMemberFunctionWithParamsStruct(alias o, string f, S)(S s) {
 }
 
 unittest {
-    mixin ProviderParams!("S", ((int, "x"), (float, "y")));
+    mixin ProviderParams!("S", int, "x", float, "y");
 }
