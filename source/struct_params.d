@@ -28,11 +28,15 @@ import std.range;
 import std.algorithm;
 import std.meta;
 
+private template isA(T) {
+    enum isA(alias U) = is(typeof(T) == U);
+}
+
 private string ProviderParamsCode(string name, Fields...)() {
     static assert(!(Fields.length % 2));
     alias Types = Stride!(2, Fields);
-    alias Names = Stride!(2, Fields[1 .. $], 2);
-    static assert(allSatisfy!(x => isType!x, Types) && allSatisfy!(x => is(typeof(x) == string), Names),
+    alias Names = Stride!(2, Fields[1 .. $]);
+    static assert(allSatisfy!(isType, Types) && allSatisfy!(isA!string, Names),
                   "ProviderParamsCode argument should be like (int, \"x\", float, \"y\", ...)");
     immutable string regularFields =
         map!(i => __traits(identifier, Types[i]) ~ ' ' ~ Names[i] ~ ';')(Fields.enumerate).join('\n');
