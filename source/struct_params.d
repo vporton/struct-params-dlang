@@ -36,12 +36,14 @@ private string ProviderParamsCode(string name, Fields...)() {
     static assert(!(Fields.length % 2));
     alias Types = Stride!(2, Fields);
     alias Names = Stride!(2, Fields[1 .. $]);
+    // TODO: https://forum.dlang.org/post/gonjvqlhbmcwykayonjx@forum.dlang.org
     static assert(allSatisfy!(isType, Types) && allSatisfy!(isA!string, Names),
                   "ProviderParamsCode argument should be like (int, \"x\", float, \"y\", ...)");
+    enum regularField(size_t i) = __traits(identifier, Types[i]) ~ ' ' ~ Names[i] ~ ';';
     immutable string regularFields =
-        map!(i => __traits(identifier, Types[i]) ~ ' ' ~ Names[i] ~ ';')(Fields.enumerate).join('\n');
+        staticMap!regularField(Types.length.iota).join('\n');
     immutable string fieldsWithDefaults =
-        map!(f => "Nullable!" ~ __traits(identifier, f[0]) ~ ' ' ~ f[1] ~ ';')(Fields).join('\n');
+        staticMap!(f => "Nullable!" ~ __traits(identifier, f[0]) ~ ' ' ~ f[1] ~ ';')(Fields).join('\n');
     return "struct " ~ name ~ " {\n" ~
            "  struct Regular {\n" ~
            "    " ~ regularFields ~ '\n' ~
