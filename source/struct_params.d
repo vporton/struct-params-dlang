@@ -23,19 +23,18 @@ under the License.
 
 module struct_params;
 
+import std.traits;
 import std.range;
 import std.algorithm;
-
-private string ProviderParamsCode(string name, Fields...)()
-    if((Fields.length % 2) ||
-       any!(i => i % 2 ? !is(typeof(Fields[i]) == string) : !isType!(Fields[i]))(Fields.enumerate))
-{
-    static assert(0, "ProviderParamsCode argument should be like [[int, \"x\"], [float, \"y\"]]");
-}
+import std.meta;
 
 private string ProviderParamsCode(string name, Fields...)() {
+    alias Types = Stride!(2, Fields);
+    alias Names = Stride!(2, Fields[1 .. $], 2);
+    static assert(allSatisfy!(x => isType!x, Types) && allSatisfy!(x => is(typeof(x) == string), Names),
+                  "ProviderParamsCode argument should be like (int, \"x\", float, \"y\", ...)");
     immutable string regularFields =
-        map!(f => __traits(identifier, f[0]) ~ ' ' ~ f[1] ~ ';')(Fields).join('\n');
+        map!(i => __traits(identifier, Types[i]) ~ ' ' ~ Names[i] ~ ';')(Fields.enumerate).join('\n');
     immutable string fieldsWithDefaults =
         map!(f => "Nullable!" ~ __traits(identifier, f[0]) ~ ' ' ~ f[1] ~ ';')(Fields).join('\n');
     return "struct " ~ name ~ " {\n" ~
