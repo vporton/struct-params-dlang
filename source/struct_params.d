@@ -39,10 +39,9 @@ private string ProviderParamsCode(string name, Fields...)() {
     static assert(isTypeTuple!Types && allSatisfy!(isA!string, Names),
                   "ProviderParamsCode argument should be like (int, \"x\", float, \"y\", ...)");
     enum regularField(size_t i) = __traits(identifier, Types[i]) ~ ' ' ~ Names[i] ~ ';';
-    immutable string regularFields =
-        staticMap!regularField(Types.length.iota).join('\n');
-    immutable string fieldsWithDefaults =
-        staticMap!(f => "Nullable!" ~ __traits(identifier, f[0]) ~ ' ' ~ f[1] ~ ';')(Fields).join('\n');
+    enum fieldWithDefault(size_t i) = "Nullable!" ~ regularField!i;
+    immutable string regularFields = staticMap!regularField(Types.length.iota).join('\n');
+    immutable string fieldsWithDefaults = staticMap!fieldsWithDefaults(Types.length.iota).join('\n');
     return "struct " ~ name ~ " {\n" ~
            "  struct Regular {\n" ~
            "    " ~ regularFields ~ '\n' ~
