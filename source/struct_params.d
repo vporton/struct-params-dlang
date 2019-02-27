@@ -29,6 +29,7 @@ import std.algorithm;
 import std.meta;
 
 private string ProviderParamsCode(string name, Fields...)() {
+    static assert(!(Fields.length % 2));
     alias Types = Stride!(2, Fields);
     alias Names = Stride!(2, Fields[1 .. $], 2);
     static assert(allSatisfy!(x => isType!x, Types) && allSatisfy!(x => is(typeof(x) == string), Names),
