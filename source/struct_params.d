@@ -29,7 +29,7 @@ import std.algorithm;
 import std.meta;
 
 private template isA(T) {
-    enum isA(alias U) = is(typeof(T) == U);
+    enum isA(alias U) = is(typeof(U) == T);
 }
 
 private string ProviderParamsCode(string name, Fields...)() {
