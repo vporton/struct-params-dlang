@@ -88,4 +88,17 @@ unittest {
     immutable S.Regular combinedDefault = { x: 11, y: 3.0 };
     immutable combined = combine(combinedMain, combinedDefault);
     assert(combined.x == 12 && combined.y == 3.0);
+
+    float f(int a, float b) {
+        return a + b;
+    }
+    assert(callFunctionWithParamsStruct!f(combined) == combined.x + combined.y);
+
+    struct Test {
+        float f(int a, float b) {
+            return a + b;
+        }
+    }
+    Test t;
+    assert(callMemberFunctionWithParamsStruct!(t, "f")(combined) == combined.x + combined.y);
 }
