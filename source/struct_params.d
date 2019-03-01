@@ -33,12 +33,12 @@ private template isA(T) {
     enum isA(alias U) = is(typeof(U) == T);
 }
 
-private string providerParamsCode(string name, Fields...)() {
+private string structParamsCode(string name, Fields...)() {
     static assert(!(Fields.length % 2));
     alias Types = Stride!(2, Fields);
     alias Names = Stride!(2, Fields[1 .. $]);
     static assert(isTypeTuple!Types && allSatisfy!(isA!string, Names),
-                  "providerParamsCode argument should be like (int, \"x\", float, \"y\", ...)");
+                  "StructParams argument should be like (int, \"x\", float, \"y\", ...)");
     enum regularField(size_t i) = Types[i].stringof ~ ' ' ~ Names[i] ~ ';';
     enum fieldWithDefault(size_t i) = "Nullable!" ~ regularField!i;
 
@@ -60,7 +60,7 @@ private string providerParamsCode(string name, Fields...)() {
 Create
 */
 mixin template StructParams(string name, Fields...) {
-    mixin(providerParamsCode!(name, Fields)());
+    mixin(structParamsCode!(name, Fields)());
 }
 
 S.Regular combine(S)(S.WithDefaults main, S.Regular default_) {
