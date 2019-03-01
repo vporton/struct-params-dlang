@@ -61,11 +61,11 @@ mixin template ProviderParams(string name, Fields...) {
 }
 
 S.Regular combine(S)(S.WithDefaults main, S.Regular default_) {
-    S result = default_;
-    static foreach (m; __traits(allMembers, S)) {
-        immutable mainMember = __traits(getMember, main, m);
+    S.Regular result = default_;
+    static foreach (m; __traits(allMembers, S.Regular)) {
         __traits(getMember, result, m) =
-            mainMember.isNull ? __traits(getMember, default_, m) : mainMember.get;
+            __traits(getMember, main, m).isNull ? __traits(getMember, default_, m)
+                                                : __traits(getMember, main, m).get;
     }
     return result;
 }
@@ -84,4 +84,8 @@ callMemberFunctionWithParamsStruct(alias o, string f, S)(S s) {
 
 unittest {
     mixin ProviderParams!("S", int, "x", float, "y");
+    immutable S.WithDefaults combinedMain = { x: 12 };
+    immutable S.Regular combinedDefault = { x: 11, y: 3.0 };
+    immutable combined = combine(combinedMain, combinedDefault);
+    assert(combined.x == 12 && combined.y == 3.0);
 }
