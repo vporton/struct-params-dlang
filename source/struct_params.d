@@ -33,12 +33,12 @@ private template isA(T) {
     enum isA(alias U) = is(typeof(U) == T);
 }
 
-private string ProviderParamsCode(string name, Fields...)() {
+private string providerParamsCode(string name, Fields...)() {
     static assert(!(Fields.length % 2));
     alias Types = Stride!(2, Fields);
     alias Names = Stride!(2, Fields[1 .. $]);
     static assert(isTypeTuple!Types && allSatisfy!(isA!string, Names),
-                  "ProviderParamsCode argument should be like (int, \"x\", float, \"y\", ...)");
+                  "providerParamsCode argument should be like (int, \"x\", float, \"y\", ...)");
     enum regularField(size_t i) = Types[i].stringof ~ ' ' ~ Names[i] ~ ';';
     enum fieldWithDefault(size_t i) = "Nullable!" ~ regularField!i;
 
@@ -56,8 +56,11 @@ private string ProviderParamsCode(string name, Fields...)() {
            '}';
 }
 
-mixin template ProviderParams(string name, Fields...) {
-    mixin(ProviderParamsCode!(name, Fields)());
+/**
+Create
+*/
+mixin template StructParams(string name, Fields...) {
+    mixin(providerParamsCode!(name, Fields)());
 }
 
 S.Regular combine(S)(S.WithDefaults main, S.Regular default_) {
@@ -83,7 +86,7 @@ callMemberFunctionWithParamsStruct(alias o, string f, S)(S s) {
 }
 
 unittest {
-    mixin ProviderParams!("S", int, "x", float, "y");
+    mixin StructParams!("S", int, "x", float, "y");
     immutable S.WithDefaults combinedMain = { x: 12 };
     immutable S.Regular combinedDefault = { x: 11, y: 3.0 };
     immutable combined = combine(combinedMain, combinedDefault);
