@@ -24,6 +24,7 @@ under the License.
 module struct_params;
 
 import std.traits;
+import std.typecons;
 import std.range;
 import std.algorithm;
 import std.meta;
@@ -38,10 +39,13 @@ private string ProviderParamsCode(string name, Fields...)() {
     alias Names = Stride!(2, Fields[1 .. $]);
     static assert(isTypeTuple!Types && allSatisfy!(isA!string, Names),
                   "ProviderParamsCode argument should be like (int, \"x\", float, \"y\", ...)");
-    enum regularField(size_t i) = __traits(identifier, Types[i]) ~ ' ' ~ Names[i] ~ ';';
+    enum regularField(size_t i) = Types[i].stringof ~ ' ' ~ Names[i] ~ ';';
     enum fieldWithDefault(size_t i) = "Nullable!" ~ regularField!i;
-    immutable string regularFields = staticMap!regularField(Types.length.iota).join('\n');
-    immutable string fieldsWithDefaults = staticMap!fieldsWithDefaults(Types.length.iota).join('\n');
+
+    immutable string regularFields =
+        [staticMap!(regularField, aliasSeqOf!(Types.length.iota))].join('\n');
+    immutable string fieldsWithDefaults =
+        [staticMap!(fieldWithDefault, aliasSeqOf!(Types.length.iota))].join('\n');
     return "struct " ~ name ~ " {\n" ~
            "  struct Regular {\n" ~
            "    " ~ regularFields ~ '\n' ~
@@ -67,7 +71,7 @@ S.Regular combine(S)(S.WithDefaults main, S.Regular default_) {
 }
 
 ReturnType!f callFunctionWithParamsStruct(alias f, S)(S s) {
-    return f(map!(m => __traits(getMember, s, m))(__traits(allMembers, S)));
+    return f(s.tupleof);
 }
 
 /**
@@ -75,7 +79,7 @@ Very unnatural to call member f by string name, but I have not found a better so
 */
 ReturnType!(__traits(getMember, o, f))
 callMemberFunctionWithParamsStruct(alias o, string f, S)(S s) {
-    return __traits(getMember, o, f)(map!(m => __traits(getMember, s, m))(__traits(allMembers, S)));
+    return __traits(getMember, o, f)(s.tupleof);
 }
 
 unittest {
