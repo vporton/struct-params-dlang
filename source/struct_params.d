@@ -33,33 +33,34 @@ private template isA(T) {
     enum isA(alias U) = is(typeof(U) == T);
 }
 
-private template FieldInfo(alias T, string name, Nullable!T default_= Nullable!T()) {
+private template FieldInfo(T, string name, Nullable!T default_= Nullable!T()) {
     alias T = T;
     string name = name;
     immutable Nullable!T default_ = default_;
 }
 
-private alias enum processFields() = AliasSeq!();
+private alias processFields() = AliasSeq!();
 
-private alias enum processFields(T, string name, T default_, Fields...) =
+private alias processFields(T, string name, T default_, Fields...) =
     AliasSeq!(FieldInfo!(T, name, default_), processFields!(Fields));
 
-private alias enum processFields(T, string name, Fields...) =
+private alias processFields(T, string name, Fields...) =
     AliasSeq!(FieldInfo!(T, name), processFields!(Fields));
 
 private string structParamsCode(string name, Fields...)() {
     static assert(!(Fields.length % 2));
-    alias Types = Stride!(2, Fields);
-    alias Names = Stride!(2, Fields[1 .. $]);
-    static assert(isTypeTuple!Types && allSatisfy!(isA!string, Names),
-                  "StructParams argument should be like (int, \"x\", float, \"y\", ...)");
-    enum regularField(size_t i) = Types[i].stringof ~ ' ' ~ Names[i] ~ ';';
-    enum fieldWithDefault(size_t i) = "Nullable!" ~ regularField!i;
-
+//    alias Types = Stride!(2, Fields);
+//    alias Names = Stride!(2, Fields[1 .. $]);
+//    static assert(isTypeTuple!Types && allSatisfy!(isA!string, Names),
+//                  "StructParams argument should be like (int, \"x\", float, \"y\", ...)");
+    enum regularField(alias f) =
+        f.T.stringof ~ ' ' ~ f.name ~ (f.default_ ? " = " ~ f.default_.stringof ~ ';': "") ~ ';';
+    enum fieldWithDefault(alias f) = "Nullable!" ~ f.T.stringof ~ ' ' ~ f.name ~ ';';
+    alias fields = processFields!(Fields);
     immutable string regularFields =
-        [staticMap!(regularField, aliasSeqOf!(Types.length.iota))].join('\n');
+        [staticMap!(regularField, fields)].join('\n');
     immutable string fieldsWithDefaults =
-        [staticMap!(fieldWithDefault, aliasSeqOf!(Types.length.iota))].join('\n');
+        [staticMap!(fieldWithDefault, fields)].join('\n');
     return "struct " ~ name ~ " {\n" ~
            "  struct Regular {\n" ~
            "    " ~ regularFields ~ '\n' ~
