@@ -33,10 +33,10 @@ private template isA(T) {
     enum isA(alias U) = is(typeof(U) == T);
 }
 
-private template FieldInfo(alias T, string name, T default_) {
+private template FieldInfo(alias T, string name, Nullable!T default_= Nullable!T()) {
     alias T = T;
     string name = name;
-    immutable T default_ = default_; // FIXME: optional
+    immutable Nullable!T default_ = default_;
 }
 
 private alias enum processFields() = AliasSeq!();
@@ -44,7 +44,8 @@ private alias enum processFields() = AliasSeq!();
 private alias enum processFields(T, string name, T default_, Fields...) =
     AliasSeq!(FieldInfo!(T, name, default_), processFields!(Fields));
 
-private alias enum processFields(Fields...) = ;
+private alias enum processFields(T, string name, Fields...) =
+    AliasSeq!(FieldInfo!(T, name), processFields!(Fields));
 
 private string structParamsCode(string name, Fields...)() {
     static assert(!(Fields.length % 2));
