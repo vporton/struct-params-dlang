@@ -33,6 +33,19 @@ private template isA(T) {
     enum isA(alias U) = is(typeof(U) == T);
 }
 
+private template FieldInfo(alias T, string name, T default_) {
+    alias T = T;
+    string name = name;
+    immutable T default_ = default_; // FIXME: optional
+}
+
+private alias enum processFields() = AliasSeq!();
+
+private alias enum processFields(T, string name, T default_, Fields...) =
+    AliasSeq!(FieldInfo!(T, name, default_), processFields!(Fields));
+
+private alias enum processFields(Fields...) = ;
+
 private string structParamsCode(string name, Fields...)() {
     static assert(!(Fields.length % 2));
     alias Types = Stride!(2, Fields);
@@ -80,10 +93,10 @@ ReturnType!f callFunctionWithParamsStruct(alias f, S)(S s) {
 /**
 Very unnatural to call member f by string name, but I have not found a better solution.
 */
-ReturnType!(__traits(getMember, o, f))
-callMemberFunctionWithParamsStruct(alias o, string f, S)(S s) {
-    return __traits(getMember, o, f)(s.tupleof);
-}
+//ReturnType!(__traits(getMember, o, f))
+//callMemberFunctionWithParamsStruct(alias o, string f, S)(S s) {
+//    return __traits(getMember, o, f)(s.tupleof);
+//}
 
 unittest {
     mixin StructParams!("S", int, "x", float, "y");
@@ -103,5 +116,6 @@ unittest {
         }
     }
     Test t;
-    assert(callMemberFunctionWithParamsStruct!(t, "f")(combined) == combined.x + combined.y);
+    //assert(callMemberFunctionWithParamsStruct!(t, "f")(combined) == combined.x + combined.y);
+    assert(callFunctionWithParamsStruct!(() => t.f)(combined) == combined.x + combined.y);
 }
