@@ -29,23 +29,25 @@ import std.range;
 import std.algorithm;
 import std.meta;
 
-private template isA(T) {
-    enum isA(alias U) = is(typeof(U) == T);
-}
+//private template isA(T) {
+//    enum isA(alias U) = is(typeof(U) == T);
+//}
 
-private template FieldInfo(T, string name, Nullable!T default_= Nullable!T()) {
-    alias T = T;
-    string name = name;
-    immutable Nullable!T default_ = default_;
+private template FieldInfo(argT, string argName) {
+    template FieldInfo(Nullable!argT argDefault = Nullable!argT()) {
+        alias T = argT;
+        string name = argName;
+        immutable Nullable!T default_ = argDefault;
+    }
 }
 
 private alias processFields() = AliasSeq!();
 
 private alias processFields(T, string name, T default_, Fields...) =
-    AliasSeq!(FieldInfo!(T, name, default_), processFields!(Fields));
+    AliasSeq!(FieldInfo!(T, name)(default_), processFields!(Fields));
 
 private alias processFields(T, string name, Fields...) =
-    AliasSeq!(FieldInfo!(T, name), processFields!(Fields));
+    AliasSeq!(FieldInfo!(T, name)(), processFields!(Fields));
 
 private string structParamsCode(string name, Fields...)() {
     static assert(!(Fields.length % 2));
