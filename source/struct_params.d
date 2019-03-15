@@ -56,7 +56,7 @@ private string structParamsCode(string name, Fields...)() {
 //    static assert(isTypeTuple!Types && allSatisfy!(isA!string, Names),
 //                  "StructParams argument should be like (int, \"x\", float, \"y\", ...)");
     enum regularField(alias f) =
-        f.T.stringof ~ ' ' ~ f.name ~ (f.default_ ? " = " ~ f.default_.stringof ~ ';' : "") ~ ';';
+        f.T.stringof ~ ' ' ~ f.name ~ (f.default_.isNull ? "" : " = " ~ f.default_.get.stringof ~ ';') ~ ';';
     enum fieldWithDefault(alias f) = "Nullable!" ~ f.T.stringof ~ ' ' ~ f.name ~ ';';
     alias fields = processFields!(Fields);
     immutable string regularFields =
