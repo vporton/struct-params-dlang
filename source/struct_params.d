@@ -26,7 +26,6 @@ module struct_params;
 import std.traits;
 import std.typecons;
 import std.range;
-import std.meta;
 
 private template FieldInfo(argT, string argName) {
     alias T = argT;
