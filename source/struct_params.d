@@ -26,12 +26,7 @@ module struct_params;
 import std.traits;
 import std.typecons;
 import std.range;
-import std.algorithm;
 import std.meta;
-
-//private template isA(T) {
-//    enum isA(alias U) = is(typeof(U) == T);
-//}
 
 private template FieldInfo(argT, string argName) {
     template FieldInfo(Nullable!argT argDefault = Nullable!argT()) {
@@ -51,10 +46,6 @@ private alias processFields(T, string name, Fields...) =
 
 private string structParamsCode(string name, Fields...)() {
     static assert(!(Fields.length % 2));
-//    alias Types = Stride!(2, Fields);
-//    alias Names = Stride!(2, Fields[1 .. $]);
-//    static assert(isTypeTuple!Types && allSatisfy!(isA!string, Names),
-//                  "StructParams argument should be like (int, \"x\", float, \"y\", ...)");
     enum regularField(alias f) =
         f.T.stringof ~ ' ' ~ f.name ~ (f.default_.isNull ? "" : " = " ~ f.default_.get.stringof ~ ';') ~ ';';
     enum fieldWithDefault(alias f) = "Nullable!" ~ f.T.stringof ~ ' ' ~ f.name ~ ';';
