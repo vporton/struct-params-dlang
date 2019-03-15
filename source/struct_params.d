@@ -97,10 +97,10 @@ ReturnType!f callFunctionWithParamsStruct(alias f, S)(S s) {
 /**
 Very unnatural to call member f by string name, but I have not found a better solution.
 */
-//ReturnType!(__traits(getMember, o, f))
-//callMemberFunctionWithParamsStruct(alias o, string f, S)(S s) {
-//    return __traits(getMember, o, f)(s.tupleof);
-//}
+ReturnType!(__traits(getMember, o, f))
+callMemberFunctionWithParamsStruct(alias o, string f, S)(S s) {
+    return __traits(getMember, o, f)(s.tupleof);
+}
 
 unittest {
     mixin StructParams!("S", int, "x", float, "y");
@@ -120,6 +120,5 @@ unittest {
         }
     }
     Test t;
-    //assert(callMemberFunctionWithParamsStruct!(t, "f")(combined) == combined.x + combined.y);
-    assert(callFunctionWithParamsStruct!(() => t.f)(combined) == combined.x + combined.y);
+    assert(callMemberFunctionWithParamsStruct!(t, "f")(combined) == combined.x + combined.y);
 }
