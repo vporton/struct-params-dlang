@@ -36,8 +36,8 @@ import std.meta;
 private template FieldInfo(argT, string argName) {
     template FieldInfo(Nullable!argT argDefault = Nullable!argT()) {
         alias T = argT;
-        string name = argName;
-        immutable Nullable!T default_ = argDefault;
+        alias name = argName;
+        alias default_ = argDefault;
     }
 }
 
@@ -47,7 +47,7 @@ private alias processFields(T, string name, T default_, Fields...) =
     AliasSeq!(FieldInfo!(T, name)(default_), processFields!(Fields));
 
 private alias processFields(T, string name, Fields...) =
-    AliasSeq!(FieldInfo!(T, name)(), processFields!(Fields));
+    AliasSeq!(Instantiate!(FieldInfo!(T, name)), processFields!(Fields));
 
 private string structParamsCode(string name, Fields...)() {
     static assert(!(Fields.length % 2));
@@ -56,7 +56,7 @@ private string structParamsCode(string name, Fields...)() {
 //    static assert(isTypeTuple!Types && allSatisfy!(isA!string, Names),
 //                  "StructParams argument should be like (int, \"x\", float, \"y\", ...)");
     enum regularField(alias f) =
-        f.T.stringof ~ ' ' ~ f.name ~ (f.default_ ? " = " ~ f.default_.stringof ~ ';': "") ~ ';';
+        f.T.stringof ~ ' ' ~ f.name ~ (f.default_ ? " = " ~ f.default_.stringof ~ ';' : "") ~ ';';
     enum fieldWithDefault(alias f) = "Nullable!" ~ f.T.stringof ~ ' ' ~ f.name ~ ';';
     alias fields = processFields!(Fields);
     immutable string regularFields =
