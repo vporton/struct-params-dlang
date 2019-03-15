@@ -29,40 +29,23 @@ import std.range;
 import std.meta;
 
 private template FieldInfo(argT, string argName) {
-    template xFieldInfo(Nullable!argT argDefault = Nullable!argT()) {
-        alias T = argT;
-        alias name = argName;
-        alias default_ = argDefault;
-    }
+    alias T = argT;
+    alias name = argName;
 }
 
 private alias processFields() = AliasSeq!();
 
-private alias processFields(T, string name, T default_, Fields...) =
-    AliasSeq!(Instantiate!(Instantiate!(FieldInfo, T, name).xFieldInfo, Nullable!T(default_)), processFields!(Fields));
-//    AliasSeq!(Instantiate!(FieldInfo!(T, name).xFieldInfo, default_), processFields!(Fields));
-
 private alias processFields(T, string name, Fields...) =
-    AliasSeq!(Instantiate!(FieldInfo!(T, name).xFieldInfo), processFields!(Fields));
+    AliasSeq!(FieldInfo!(T, name), processFields!(Fields));
 
 private string structParamsCode(string name, Fields...)() {
-    enum regularField(alias f) =
-        f.T.stringof ~ ' ' ~ f.name ~ (f.default_.isNull ? "" : " = " ~ f.default_.get.stringof) ~ ';';
+    enum regularField(alias f) = f.T.stringof ~ ' ' ~ f.name ~ ';';
     enum fieldWithDefault(alias f) = "Nullable!" ~ f.T.stringof ~ ' ' ~ f.name ~ ';';
     alias fields = processFields!(Fields);
     immutable string regularFields =
         [staticMap!(regularField, fields)].join('\n');
     immutable string fieldsWithDefaults =
         [staticMap!(fieldWithDefault, fields)].join('\n');
-    pragma(msg,
-           "struct " ~ name ~ " {\n" ~
-           "  struct Regular {\n" ~
-           "    " ~ regularFields ~ '\n' ~
-           "  }\n" ~
-           "  struct WithDefaults {\n" ~
-           "    " ~ fieldsWithDefaults ~ '\n' ~
-           "  }\n" ~
-           '}') ;
     return "struct " ~ name ~ " {\n" ~
            "  struct Regular {\n" ~
            "    " ~ regularFields ~ '\n' ~
@@ -103,22 +86,22 @@ callMemberFunctionWithParamsStruct(alias o, string f, S)(S s) {
 }
 
 unittest {
-    mixin StructParams!("S", int, "x", float, "y", float, "z", 7.0);
+    mixin StructParams!("S", int, "x", float, "y");
     immutable S.WithDefaults combinedMain = { x: 12 };
-    immutable S.Regular combinedDefault = { x: 11, y: 3.0, z: 2 };
+    immutable S.Regular combinedDefault = { x: 11, y: 3.0 };
     immutable combined = combine(combinedMain, combinedDefault);
-    assert(combined.x == 12 && combined.y == 3.0 && combined.z == 7.0);
+    assert(combined.x == 12 && combined.y == 3.0);
 
-    float f(int a, float b, float c) {
-        return a + b + c;
+    float f(int a, float b) {
+        return a + b;
     }
-    assert(callFunctionWithParamsStruct!f(combined) == combined.x + combined.y + combined.z);
+    assert(callFunctionWithParamsStruct!f(combined) == combined.x + combined.y);
 
     struct Test {
-        float f(int a, float b, float c) {
-            return a + b + c;
+        float f(int a, float b) {
+            return a + b;
         }
     }
     Test t;
-    assert(callMemberFunctionWithParamsStruct!(t, "f")(combined) == combined.x + combined.y + combined.z);
+    assert(callMemberFunctionWithParamsStruct!(t, "f")(combined) == combined.x + combined.y);
 }
