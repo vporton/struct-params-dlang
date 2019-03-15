@@ -94,6 +94,7 @@ callMemberFunctionWithParamsStruct(alias o, string f, S)(S s) {
 }
 
 unittest {
+    // TODO: Test with default values
     mixin StructParams!("S", int, "x", float, "y");
     immutable S.WithDefaults combinedMain = { x: 12 };
     immutable S.Regular combinedDefault = { x: 11, y: 3.0 };
