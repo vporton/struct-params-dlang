@@ -54,12 +54,41 @@ private string structParamsCode(string name, Fields...)() {
 }
 
 /**
-Create
+Example: `mixin StructParams!("S", int, "x", float, "y");` creates
+```
+struct S {
+  struct Regular {
+    int x;
+    float y;
+  }
+  struct WithDefaults {
+    Nullable!int x;
+    Nullable!float y;
+  }
+}
+```
+These structures are intended to be used as arguments of `combine` function.
 */
 mixin template StructParams(string name, Fields...) {
     mixin(structParamsCode!(name, Fields)());
 }
 
+/**
+Creates a "combined" structure from `main` and `default_`. The combined structure contains member
+values from `main` whenever `!isNull` for this value and otherwise values from `default_`.
+
+Example:
+```
+mixin StructParams!("S", int, "x", float, "y");
+immutable S.WithDefaults combinedMain = { x: 12 }; // y is default-initialized
+immutable S.Regular combinedDefault = { x: 11, y: 3.0 };
+immutable combined = combine(combinedMain, combinedDefault);
+assert(combined.x == 12 && combined.y == 3.0);
+```
+
+Note that we cannot use struct literals like `S.Regular(x: 11, y: 3.0)` in the current version
+(v2.084.1) of D, just because current version of D does not have this feature. See DIP71.
+*/
 S.Regular combine(S)(S.WithDefaults main, S.Regular default_) {
     S.Regular result = default_;
     static foreach (m; __traits(allMembers, S.Regular)) {
@@ -70,12 +99,48 @@ S.Regular combine(S)(S.WithDefaults main, S.Regular default_) {
     return result;
 }
 
+/**
+Example:
+
+Consider function
+```
+float f(int a, float b) {
+    return a + b;
+}
+```
+
+Then we can call it like `callFunctionWithParamsStruct!f(combined)` where `combined` in
+this example may be created by `combine` function. (`callFunctionWithParamsStruct` is intented
+mainly to be used together with `combine` function.)
+
+The members from `combined` are passed to the function `f` in the same order as they are defined
+in the struct.
+*/
 ReturnType!f callFunctionWithParamsStruct(alias f, S)(S s) {
     return f(s.tupleof);
 }
 
 /**
-Very unnatural to call member f by string name, but I have not found a better solution.
+Example:
+
+Consider:
+```
+struct Test {
+    float f(int a, float b) {
+        return a + b;
+    }
+}
+Test t;
+```
+
+Then it can be called like `callMemberFunctionWithParamsStruct!(t, "f")(combined)`
+(see `callFunctionWithParamsStruct` for the meaning of this).
+
+It is very unnatural to call member f by string name, but I have not found a better solution.
+
+Another variant would be to use
+`callFunctionWithParamsStruct!((int a, float b) => t.f(a, b))(combined)`, but this way is
+incovenient as it requires specifying arguments explicitly.
 */
 ReturnType!(__traits(getMember, o, f))
 callMemberFunctionWithParamsStruct(alias o, string f, S)(S s) {
