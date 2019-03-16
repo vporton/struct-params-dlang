@@ -140,7 +140,7 @@ It is very unnatural to call member f by string name, but I have not found a bet
 
 Another variant would be to use
 `callFunctionWithParamsStruct!((int a, float b) => t.f(a, b))(combined)`, but this way is
-incovenient as it requires specifying arguments explicitly.
+inconvenient as it requires specifying arguments explicitly.
 */
 ReturnType!(__traits(getMember, o, f))
 callMemberFunctionWithParamsStruct(alias o, string f, S)(S s) {
