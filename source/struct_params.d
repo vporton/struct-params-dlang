@@ -37,7 +37,8 @@ private alias processFields() = AliasSeq!();
 private alias processFields(T, string name, Fields...) =
     AliasSeq!(FieldInfo!(T, name), processFields!(Fields));
 
-private string structParamsCode(string name, Fields...)() {
+// Needs to be public not to break visibility rules in StructParams template mixin.
+public string structParamsImplementation(string name, Fields...)() {
     enum regularField(alias f) = f.T.stringof ~ ' ' ~ f.name ~ ';';
     enum fieldWithDefault(alias f) = "Nullable!" ~ f.T.stringof ~ ' ' ~ f.name ~ ';';
     alias fields = processFields!(Fields);
@@ -70,7 +71,7 @@ struct S {
 These structures are intended to be used as arguments of `combine` function.
 */
 mixin template StructParams(string name, Fields...) {
-    mixin(structParamsCode!(name, Fields)());
+    mixin(structParamsImplementation!(name, Fields)());
 }
 
 /**
