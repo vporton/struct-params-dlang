@@ -72,6 +72,7 @@ struct S {
 These structures are intended to be used as arguments of `combine` function.
 */
 mixin template StructParams(string name, Fields...) {
+    import std.typecons : Nullable;
     mixin(structParamsImplementation!(name, Fields)());
 }
 
