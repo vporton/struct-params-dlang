@@ -23,6 +23,7 @@ under the License.
 
 module struct_params;
 
+import std.meta;
 import std.traits;
 import std.typecons;
 import std.range;
