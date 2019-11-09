@@ -93,7 +93,7 @@ Note that we cannot use struct literals like `S.Regular(x: 11, y: 3.0)` in the c
 (v2.084.1) of D, just because current version of D does not have this feature. See DIP71.
 */
 deprecated("Use the variant with both arguments *.WithDefaults")
-S.Regular combine(S)(S.WithDefaults main, S.Regular default_) {
+S.Regular combine(S)(const S.WithDefaults main, const S.Regular default_) {
     S.Regular result;
     static foreach (m; __traits(allMembers, S.Regular)) {
         __traits(getMember, result, m) =
@@ -120,7 +120,7 @@ assert(combined.x == 12 && combined.y == 3.0);
 Note that we cannot use struct literals like `S.Regular(x: 11, y: 3.0)` in the current version
 (v2.084.1) of D, just because current version of D does not have this feature. See DIP71.
 */
-S.Regular combine(S)(S.WithDefaults main, S.WithDefaults default_) {
+S.Regular combine(S)(const S.WithDefaults main, const S.WithDefaults default_) {
     S.Regular result;
     static foreach (m; __traits(allMembers, S.Regular)) {
         assert(!__traits(getMember, main, m).isNull || !__traits(getMember, default_, m).isNull);
