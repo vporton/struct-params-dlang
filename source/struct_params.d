@@ -92,12 +92,41 @@ assert(combined.x == 12 && combined.y == 3.0);
 Note that we cannot use struct literals like `S.Regular(x: 11, y: 3.0)` in the current version
 (v2.084.1) of D, just because current version of D does not have this feature. See DIP71.
 */
+deprecated("Use the variant with both arguments *.WithDefaults")
 S.Regular combine(S)(S.WithDefaults main, S.Regular default_) {
-    S.Regular result = default_;
+    S.Regular result;
     static foreach (m; __traits(allMembers, S.Regular)) {
         __traits(getMember, result, m) =
             __traits(getMember, main, m).isNull ? __traits(getMember, default_, m)
                                                 : __traits(getMember, main, m).get;
+    }
+    return result;
+}
+
+/**
+Creates a "combined" structure from `main` and `default_`. The combined structure contains member
+values from `main` whenever `!isNull` for this value and otherwise values from `default_`.
+Assertion error if both a member of `main` and of `default_` are null.
+
+Example:
+```
+mixin StructParams!("S", int, "x", float, "y");
+immutable S.WithDefaults combinedMain = { x: 12 }; // y is default-initialized
+immutable S.WithDefaults combinedDefault = { x: 11, y: 3.0 };
+immutable combined = combine(combinedMain, combinedDefault);
+assert(combined.x == 12 && combined.y == 3.0);
+```
+
+Note that we cannot use struct literals like `S.Regular(x: 11, y: 3.0)` in the current version
+(v2.084.1) of D, just because current version of D does not have this feature. See DIP71.
+*/
+S.Regular combine(S)(S.WithDefaults main, S.WithDefaults default_) {
+    S.Regular result;
+    static foreach (m; __traits(allMembers, S.Regular)) {
+        assert(!__traits(getMember, main, m).isNull || !__traits(getMember, default_, m).isNull);
+        __traits(getMember, result, m) =
+            __traits(getMember, main, m).isNull ? __traits(getMember, default_, m)
+                                                : __traits(getMember, main, m);
     }
     return result;
 }
@@ -156,6 +185,10 @@ unittest {
     immutable S.Regular combinedDefault = { x: 11, y: 3.0 };
     immutable combined = combine(combinedMain, combinedDefault);
     assert(combined.x == 12 && combined.y == 3.0);
+    immutable S.WithDefaults combinedMain2 = { x: 12 };
+    immutable S.WithDefaults combinedDefault2 = { x: 11, y: 3.0 };
+    immutable combined2 = combine(combinedMain2, combinedDefault2);
+    assert(combined2.x == 12 && combined2.y == 3.0);
 
     float f(int a, float b) {
         return a + b;
