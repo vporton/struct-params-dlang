@@ -125,8 +125,8 @@ S.Regular combine(S)(S.WithDefaults main, S.WithDefaults default_) {
     static foreach (m; __traits(allMembers, S.Regular)) {
         assert(!__traits(getMember, main, m).isNull || !__traits(getMember, default_, m).isNull);
         __traits(getMember, result, m) =
-            __traits(getMember, main, m).isNull ? __traits(getMember, default_, m)
-                                                : __traits(getMember, main, m);
+            __traits(getMember, main, m).isNull ? __traits(getMember, default_, m).get
+                                                : __traits(getMember, main, m).get;
     }
     return result;
 }
