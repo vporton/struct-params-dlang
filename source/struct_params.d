@@ -43,8 +43,8 @@ public string structParamsImplementation(string name, Fields...)() {
     enum regularField(alias f) = fullyQualifiedName!(f.T) ~ ' ' ~ f.name ~ ';';
     enum fieldWithDefault(alias f) = "Nullable!(" ~ fullyQualifiedName!(f.T) ~ ") " ~ f.name ~ ';';
     alias fields = processFields!(Fields);
-    immutable string regularFields = [staticMap!(regularField, fields)].join('\n');
-    immutable string fieldsWithDefaults = [staticMap!(fieldWithDefault, fields)].join('\n');
+    immutable string regularFields = cast(immutable string) [staticMap!(regularField, fields)].join('\n');
+    immutable string fieldsWithDefaults = cast(immutable string) [staticMap!(fieldWithDefault, fields)].join('\n');
     return "struct " ~ name ~ " {\n" ~
            "  struct Regular {\n" ~
            "    " ~ regularFields ~ '\n' ~
