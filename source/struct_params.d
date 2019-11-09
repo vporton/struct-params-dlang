@@ -98,7 +98,7 @@ S.Regular combine(S)(S.WithDefaults main, S.Regular default_) {
     static foreach (m; __traits(allMembers, S.Regular)) {
         __traits(getMember, result, m) =
             __traits(getMember, main, m).isNull ? __traits(getMember, default_, m)
-                                                : __traits(getMember, main, m).get;
+                                                : __traits(getMember, main, m);
     }
     return result;
 }
