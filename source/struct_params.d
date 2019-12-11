@@ -72,6 +72,10 @@ struct S {
     Nullable!int x;
     Nullable!float y;
   }
+  struct Func {
+    Nullable!(int delegate()) x;
+    Nullable!(float delegate()) y;
+  }
 }
 ```
 These structures are intended to be used as arguments of `combine` function.
