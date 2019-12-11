@@ -42,15 +42,20 @@ private alias processFields(T, string name, Fields...) =
 public string structParamsImplementation(string name, Fields...)() {
     enum regularField(alias f) = fullyQualifiedName!(f.T) ~ ' ' ~ f.name ~ ';';
     enum fieldWithDefault(alias f) = "Nullable!(" ~ fullyQualifiedName!(f.T) ~ ") " ~ f.name ~ ';';
+    enum funcField(alias f) = "Nullable!(" ~ fullyQualifiedName!(f.T) ~ " delegate()) " ~ f.name ~ ';';
     alias fields = processFields!(Fields);
     immutable string regularFields = cast(immutable string) [staticMap!(regularField, fields)].join('\n');
     immutable string fieldsWithDefaults = cast(immutable string) [staticMap!(fieldWithDefault, fields)].join('\n');
+    immutable string funcFields = cast(immutable string) [staticMap!(funcField, fields)].join('\n');
     return "struct " ~ name ~ " {\n" ~
            "  struct Regular {\n" ~
            "    " ~ regularFields ~ '\n' ~
            "  }\n" ~
            "  struct WithDefaults {\n" ~
            "    " ~ fieldsWithDefaults ~ '\n' ~
+           "  }\n" ~
+           "  struct Func {\n" ~
+           "    " ~ funcFields ~ '\n' ~
            "  }\n" ~
            '}';
 }
@@ -125,8 +130,36 @@ S.Regular combine(S)(S.WithDefaults main, S.WithDefaults default_) {
     static foreach (m; __traits(allMembers, S.Regular)) {
         assert(!__traits(getMember, main, m).isNull || !__traits(getMember, default_, m).isNull);
         __traits(getMember, result, m) =
-            __traits(getMember, main, m).isNull ? __traits(getMember, default_, m).get
-                                                : __traits(getMember, main, m).get;
+        __traits(getMember, main, m).isNull ? __traits(getMember, default_, m).get
+        : __traits(getMember, main, m).get;
+    }
+    return result;
+}
+
+/**
+Creates a "combined" structure from `main` and `default_`. The combined structure contains member
+values from `main` whenever `!isNull` for this value and otherwise calculated values from `default_`.
+Assertion error if both a member of `main` and of `default_` are null.
+
+Example:
+```
+mixin StructParams!("S", int, "x", float, "y");
+immutable S.WithDefaults combinedMain = { x: 12 }; // y is default-initialized
+immutable S.Func combinedDefault = { x: ()=>11, y: ()=>3.0 };
+immutable combined = combine(combinedMain, combinedDefault);
+assert(combined.x == 12 && combined.y == 3.0);
+```
+
+Note that we cannot use struct literals like `S.Regular(x: 11, y: 3.0)` in the current version
+(v2.084.1) of D, just because current version of D does not have this feature. See DIP71.
+*/
+S.Regular combine(S)(S.WithDefaults main, S.Func default_) {
+    S.Regular result;
+    static foreach (m; __traits(allMembers, S.Regular)) {
+        assert(!__traits(getMember, main, m).isNull || !__traits(getMember, default_, m).isNull);
+        __traits(getMember, result, m) =
+        __traits(getMember, main, m).isNull ? __traits(getMember, default_, m).get()()
+        : __traits(getMember, main, m).get;
     }
     return result;
 }
@@ -189,6 +222,10 @@ unittest {
     immutable S.WithDefaults combinedDefault2 = { x: 11, y: 3.0 };
     immutable combined2 = combine(combinedMain2, combinedDefault2);
     assert(combined2.x == 12 && combined2.y == 3.0);
+    immutable S.WithDefaults combinedMain3 = { x: 12 };
+    immutable S.Func combinedDefault3 = { x: ()=>11, y: ()=>3.0 };
+    immutable combined3 = combine(combinedMain3, combinedDefault3);
+    assert(combined3.x == 12 && combined3.y == 3.0);
 
     float f(int a, float b) {
         return a + b;
