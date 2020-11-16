@@ -8,10 +8,6 @@
   "name": "struct-params",
   "configurations": [
     {
-      "name": "application",
-      "targetType": "executable"
-    },
-    {
       "name": "shared-library",
       "targetType": "dynamicLibrary"
     },
