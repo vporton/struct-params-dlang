@@ -104,7 +104,7 @@ Note that we cannot use struct literals like `S.Regular(x: 11, y: 3.0)` in the c
 deprecated("Use the variant with both arguments *.WithDefaults")
 S.Regular combine(S)(S.WithDefaults main, S.Regular default_) {
     S.Regular result;
-    static foreach (m; __traits(allMembers, S.Regular)) {
+    static foreach (m; FieldNameTuple!(S.Regular)) {
         __traits(getMember, result, m) =
             __traits(getMember, main, m).isNull ? __traits(getMember, default_, m)
                                                 : __traits(getMember, main, m);
@@ -131,7 +131,7 @@ Note that we cannot use struct literals like `S.Regular(x: 11, y: 3.0)` in the c
 */
 S.Regular combine(S)(S.WithDefaults main, S.WithDefaults default_) {
     S.Regular result;
-    static foreach (m; __traits(allMembers, S.Regular)) {
+    static foreach (m; FieldNameTuple!(S.Regular)) {
         assert(!__traits(getMember, main, m).isNull || !__traits(getMember, default_, m).isNull);
         __traits(getMember, result, m) =
         __traits(getMember, main, m).isNull ? __traits(getMember, default_, m).get
@@ -159,7 +159,7 @@ Note that we cannot use struct literals like `S.Regular(x: 11, y: 3.0)` in the c
 */
 S.Regular combine(S)(S.WithDefaults main, S.Func default_) {
     S.Regular result;
-    static foreach (m; __traits(allMembers, S.Regular)) {
+    static foreach (m; FieldNameTuple!(S.Regular)) {
         assert(!__traits(getMember, main, m).isNull || !__traits(getMember, default_, m).isNull);
         __traits(getMember, result, m) =
         __traits(getMember, main, m).isNull ? __traits(getMember, default_, m).get()()
