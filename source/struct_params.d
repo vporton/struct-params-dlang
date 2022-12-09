@@ -1,4 +1,4 @@
-/*
+/**
 struct-params-dlang - https://github.com/vporton/struct-params-dlang
 
 This file is part of struct-params-dlang.
@@ -21,6 +21,9 @@ specific language governing permissions and limitations
 under the License.
 */
 
+/**
+Defines means to pass structs with default values that may be unspecified.
+*/
 module struct_params;
 
 import std.meta;
